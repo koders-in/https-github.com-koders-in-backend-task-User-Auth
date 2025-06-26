@@ -44,3 +44,14 @@ export const register = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+ **
+ * @desc    Register a new user
+ * @route   POST /api/auth/register
+ * @access  Public
+ */  
+
+export const login = async (req, res) =>{
+
+
+}

@@ -68,7 +68,7 @@ backend/
 | `/api/auth/register` | POST | ❌ | Signup with email & password |
 | `/api/auth/login` | POST | ❌ | Login with credentials |
 | `/api/auth/reset-password` | POST | ❌ | Request password reset |
-| `/api/auth/new-password` | POST | ❌ | Set new password |
+| `/api/auth/new-password` | POST | ✅  | Set new password |
 | `/api/user/profile` | GET | ✅ | Get authenticated user profile |
 
 ---
