@@ -1,3 +1,4 @@
+import e from "express";
 import User from "../models/user.model.js";
 import { sendToken } from "./../utils/sendToken.js";
 
@@ -89,7 +90,6 @@ export const login = async (req, res) => {
  * @access  Private
  */
 
-
 export const logout = (req, res) => {
   try {
     res.clearCookie("token", {
@@ -109,50 +109,83 @@ export const logout = (req, res) => {
 };
 
 /**
- * @desc    Update password
+ * @desc    Set new password
  * @route   POST /api/auth/new-password
- * @access  Private
+ * @access  Public
  */
 
 export const newPassword = async (req, res) => {
   try {
-    const { oldPassword, newPassword } = req.body;
+    const { email, token, newPassword } = req.body;
 
-    if (!oldPassword || !newPassword) {
-      return res.status(400).json({ message: "Old and new passwords are required" });
+    if (!email || !token || !newPassword) {
+      return res.status(400).json({
+        message: "Email, token, and new password are required",
+      });
     }
 
-    const user = await User.findById(req.user._id);
+    const user = await User.findOne({
+      email,
+      resetPasswordToken: token,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
 
-    if (!user || user.password !== oldPassword) {
-      return res.status(401).json({ message: "Old password is incorrect" });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token" });
     }
 
     user.password = newPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
     await user.save();
 
     return res.status(200).json({ message: "Password updated successfully" });
   } catch (error) {
-    console.error("Error updating password:", error);
+    console.error("Error resetting password:", error);
     return res.status(500).json({ message: "Internal server error" });
-  } 
-}
+  }
+};
+
+/**
+ * @desc    Request password reset
+* @route   POST /api/auth/reset-password
+ * @access  Public
+ */
+
+export const resetPassword = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) return res.status(400).json({ message: "Email is required" });
+
+  const user = await User.findOne({ email });
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  const resetToken = Math.random().toString(36).substr(2, 8);
+
+  user.resetPasswordToken = resetToken;
+  user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+  await user.save();
+
+  res.status(200).json({
+    message: "Reset token generated",
+    resetToken,
+  });
+};
+
 /**
  * @desc    Get user profile
  * @route   GET /api/auth/profile
  * @access  Private
  */
 
-export const profile=async(req,res)=>{
- try {
-  const user = await User.findById(req.user._id).select("-password");
-  
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
-  
-  return res.status(200).json(user);
- } catch (error) {
-  
- } 
-}
+export const profile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json(user);
+  } catch (error) {}
+};
