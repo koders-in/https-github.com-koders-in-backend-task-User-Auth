@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import userRoute from "./routes/auth.routes.js";
 const app = express();
 
+
 // logs req in console (in dev mode)
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
