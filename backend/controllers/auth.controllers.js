@@ -166,6 +166,11 @@ export const resetPassword = async (req, res) => {
   user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
   await user.save();
 
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "Strict",
+  });
   res.status(200).json({
     message: "Reset token generated",
     resetToken,
