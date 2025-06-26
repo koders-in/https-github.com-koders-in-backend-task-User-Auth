@@ -1,5 +1,5 @@
 import User from "../models/user.model.js";
-import { sendToken } from "./../utils/sendToken.js"
+import { sendToken } from "./../utils/sendToken.js";
 
 /**
  * @desc    Register a new user
@@ -14,7 +14,7 @@ export const register = async (req, res) => {
     console.log(req.body);
 
     // check if all the required fields are present
-    
+
     if (
       [fullName, email, password].some((field) => !field || field.trim() === "")
     ) {
@@ -36,22 +36,49 @@ export const register = async (req, res) => {
       password,
     });
 
-   return  sendToken(user, res);
-
-    
+    return sendToken(user, res);
   } catch (error) {
     console.error("Error during registration:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
 
- **
- * @desc    Register a new user
- * @route   POST /api/auth/register
+/**
+ * @desc    Login a user
+ * @route   POST /api/auth/login
  * @access  Public
- */  
+ */
 
-export const login = async (req, res) =>{
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
+    // check if all the required fields are present
+    if ([email, password].some((field) => !field || field.trim() === "")) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
+    }
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
 
-}
+    if (!user) {
+      return res.status(401).json({
+        message: " that email or password is wrong!.",
+      });
+    }
+    // Check if the password matches
+    if (password === user.password) {
+      return sendToken(user, res);
+    } else {
+      return res.status(401).json({
+        message: " that email or password is wrong!.",
+      });
+    }
+  } catch (error) {
+    console.error("Login error:", error.message);
+    res.status(500).json({
+      message: "Something went wrong. Please try again later.",
+      error: error.message,
+    });
+  }
+};
