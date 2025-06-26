@@ -107,3 +107,52 @@ export const logout = (req, res) => {
     });
   }
 };
+
+/**
+ * @desc    Update password
+ * @route   POST /api/auth/new-password
+ * @access  Private
+ */
+
+export const newPassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ message: "Old and new passwords are required" });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    if (!user || user.password !== oldPassword) {
+      return res.status(401).json({ message: "Old password is incorrect" });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    return res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    console.error("Error updating password:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  } 
+}
+/**
+ * @desc    Get user profile
+ * @route   GET /api/auth/profile
+ * @access  Private
+ */
+
+export const profile=async(req,res)=>{
+ try {
+  const user = await User.findById(req.user._id).select("-password");
+  
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+  
+  return res.status(200).json(user);
+ } catch (error) {
+  
+ } 
+}
