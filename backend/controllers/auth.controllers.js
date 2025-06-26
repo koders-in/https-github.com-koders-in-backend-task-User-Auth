@@ -148,7 +148,7 @@ export const newPassword = async (req, res) => {
 
 /**
  * @desc    Request password reset
-* @route   POST /api/auth/reset-password
+ * @route   POST /api/auth/reset-password
  * @access  Public
  */
 
@@ -180,7 +180,9 @@ export const resetPassword = async (req, res) => {
 
 export const profile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select("-password");
+    const user = await User.findById(req.user._id).select(
+      "-password -resetPasswordToken -resetPasswordExpire"
+    );
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
